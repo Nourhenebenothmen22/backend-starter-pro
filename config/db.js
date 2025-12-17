@@ -19,8 +19,14 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
-const disconnectDB=async()=>{
-  await prisma.$disconnect()
-}
+const disconnectDB = async () => {
+  try {
+    await prisma.$disconnect();
+    logger.info("🛑 Database disconnected");
+  } catch (err) {
+    logger.error("❌ DB disconnection failed", err);
+  }
+};
 
-export { prisma, connectDB};
+
+export { prisma, connectDB,disconnectDB};
