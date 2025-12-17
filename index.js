@@ -6,100 +6,136 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import logger from "./config/logger.js";
 import movieRoutes from "./routes/movieRoutes.js";
-import { connectDB, disconnectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import { connectDB, disconnectDB } from "./config/db.js";
 
-// Connect to database with error handling
+// -----------------------------------
+// DATABASE CONNECTION
+// -----------------------------------
 try {
   await connectDB();
   logger.info("Database connection established");
 } catch (error) {
-  logger.error("Failed to connect to database:", error);
+  logger.error("Failed to connect to database", error);
   process.exit(1);
 }
 
-// Create Express application
+// -----------------------------------
+// EXPRESS APP INITIALIZATION
+// -----------------------------------
 const app = express();
 
-// -----------------------------
-// MIDDLEWARES
-// -----------------------------
+// -----------------------------------
+// MIDDLEWARES (ORDER MATTERS)
+// -----------------------------------
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || "*",
-  credentials: true,
-}));
+
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "*",
+    credentials: true,
+  })
+);
+
+// Parse JSON bodies
 app.use(express.json());
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(limiter);
+// Rate limiting (disabled during tests)
+if (process.env.NODE_ENV !== "test") {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use(limiter);
+}
 
-// HTTP logging
-app.use(morgan("combined", {
-  stream: { write: (message) => logger.info(message.trim()) },
-}));
+// HTTP request logging (use "dev" for debugging)
+app.use(morgan("dev"));
 
-// -----------------------------
+// -----------------------------------
 // ROUTES
-// -----------------------------
+// -----------------------------------
+
+// Root endpoint
 app.get("/", (req, res) => {
-  res.json({ 
-    message: "Movie API Service", 
+  res.json({
+    message: "Movie API Service",
+    status: "running",
     version: "1.0.0",
-    documentation: "/api-docs",
-    health: "/health"
+    endpoints: {
+      auth: {
+        register: "POST /api/v1/auth/register",
+        login: "POST /api/v1/auth/login",
+      },
+      movies: "GET /api/v1/movies",
+      health: "GET /health",
+    },
   });
 });
 
-app.use("/api/v1/movies", movieRoutes);
-app.use("/api/v1/auth", authRoutes);
-
-
-// -----------------------------
-// SERVER INITIALIZATION
-// -----------------------------
-const PORT = parseInt(process.env.PORT) || 3000;
-const HOST = process.env.HOST || "0.0.0.0";
-
-const server = app.listen(PORT, HOST, () => {
-  logger.info(`Server started successfully`);
-  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.info(`Listening on: http://${HOST}:${PORT}`);
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+  });
 });
 
-// Graceful shutdown handler
+// API routes
+app.use("/api/v1/users", authRoutes);
+app.use("/api/v1/movies", movieRoutes);
+
+// -----------------------------------
+// 404 HANDLER (MUST BE LAST)
+// -----------------------------------
+app.use((req, res) => {
+  logger.warn(`404 - Route not found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+    method: req.method,
+    path: req.originalUrl,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// -----------------------------------
+// SERVER STARTUP
+// -----------------------------------
+const PORT = parseInt(process.env.PORT, 10) || 5000;
+
+const server = app.listen(PORT, () => {
+  logger.info("🚀 Server started successfully");
+  logger.info(`📊 Environment: ${process.env.NODE_ENV || "development"}`);
+  logger.info(`🌐 Server is running at http://localhost:${PORT}`);
+
+});
+
+// -----------------------------------
+// GRACEFUL SHUTDOWN
+// -----------------------------------
 const shutdown = async () => {
-  logger.info("Initiating graceful shutdown...");
-  
+  logger.info("Received shutdown signal...");
+
   try {
-    // Close HTTP server
     await new Promise((resolve, reject) => {
       server.close((error) => {
         if (error) reject(error);
         else resolve();
       });
     });
-    logger.info("HTTP server closed");
-    
-    // Close database connection
+
     await disconnectDB();
-    logger.info("Database connection closed");
-    
-    logger.info("Shutdown completed successfully");
+    logger.info("✅ Graceful shutdown completed");
     process.exit(0);
   } catch (error) {
-    logger.error("Error during shutdown:", error);
+    logger.error("❌ Error during shutdown", error);
     process.exit(1);
   }
 };
 
-// Register signal handlers
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
