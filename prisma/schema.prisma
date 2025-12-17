@@ -5,3 +5,23 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// User model
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  movies    Movie[] // relation: a user can have multiple movies
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Movie model
+model Movie {
+  id     Int    @id @default(autoincrement())
+  title  String
+  year   Int
+  userId Int
+  user   User   @relation(fields: [userId], references: [id])
+}
