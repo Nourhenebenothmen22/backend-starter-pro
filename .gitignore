@@ -1,0 +1,18 @@
+# Node.js dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Env variables (secrets)
+.env
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Optional: build or dist folders
+dist/
+build/
