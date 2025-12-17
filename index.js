@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express from "express";
+import express, { urlencoded } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -39,6 +39,7 @@ app.use(
 
 // Parse JSON bodies
 app.use(express.json());
+app.use(express.urlencoded({extended:true}))
 
 // Rate limiting (disabled during tests)
 if (process.env.NODE_ENV !== "test") {
