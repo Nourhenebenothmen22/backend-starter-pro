@@ -1,32 +1,38 @@
-import pkg from "pg";
-const { Pool } = pkg;
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
-import logger from "./logger.js";
+// config/db.js - Corrected Version
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '@prisma/client';
+import logger from './logger.js';
 
-const connectionString = process.env.DATABASE_URL;
+// 1. Create the PostgreSQL pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
-const pool = new Pool({ connectionString });
+// 2. Create the adapter
 const adapter = new PrismaPg(pool);
+
+// 3. Create the Prisma client with the adapter
 const prisma = new PrismaClient({ adapter });
 
-const connectDB = async () => {
+export const connectDB = async () => {
   try {
-    await prisma.$connect();
-    logger.info("✅ Database connected");
-  } catch (err) {
-    logger.error("❌ DB connection failed", err);
+    // Check the connection
+    await prisma.$queryRaw`SELECT 1`;
+    logger.info('✅ Database connected successfully');
+  } catch (error) {
+    logger.error('❌ Failed to connect to the database:', error);
     process.exit(1);
   }
 };
-const disconnectDB = async () => {
+
+export const disconnectDB = async () => {
   try {
     await prisma.$disconnect();
-    logger.info("🛑 Database disconnected");
-  } catch (err) {
-    logger.error("❌ DB disconnection failed", err);
+    logger.info('✅ Database disconnected successfully');
+  } catch (error) {
+    logger.error('❌ Error disconnecting from the database:', error);
   }
 };
 
-
-export { prisma, connectDB,disconnectDB};
+export default prisma;
