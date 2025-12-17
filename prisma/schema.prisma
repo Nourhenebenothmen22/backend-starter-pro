@@ -40,16 +40,16 @@ model Movie {
 }
 
 model watchList {
-  id        Int      @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   movieId   Int
-  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
-  status    String   @default("watching")
+  movie     Movie       @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  status    WatchStatus @default(WATCHING)
   notes     String?
   rating    Float?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@unique([userId, movieId])
 }
@@ -57,4 +57,11 @@ model watchList {
 enum Role {
   USER
   ADMIN
+}
+
+enum WatchStatus {
+  WATCHING
+  COMPLETED
+  PLAN_TO_WATCH
+  DROPPED
 }
