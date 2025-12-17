@@ -1,13 +1,14 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
-import dotenv from "dotenv";
-import logger from "./config/logger.js"; 
+import logger from "./config/logger.js";
+import movieRoutes from "./routes/movieRoutes.js";
+import { connectDB } from "./config/db.js";
 
-// Load environment variables
-dotenv.config();
+connectDB()
 
 // Create Express application
 const app = express();
@@ -23,7 +24,7 @@ app.use(express.json()); // JSON parser
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // maximum 100 requests per IP
+    max: 100, // Maximum 100 requests per IP
     message: "Too many requests from this IP, please try again later",
   })
 );
@@ -38,12 +39,14 @@ app.use(
 );
 
 // -----------------------------
-// EXAMPLE ROUTES
+// ROUTES
 // -----------------------------
 app.get("/", (req, res) => {
-  logger.info("GET / called"); // manual log
+  logger.info("GET / called"); // Manual log
   res.json({ message: "Hello World!" });
 });
+
+app.use("/api/v1/movies", movieRoutes);
 
 // -----------------------------
 // GLOBAL ERROR MIDDLEWARE
@@ -57,6 +60,8 @@ app.use((err, req, res, next) => {
 // SERVER STARTUP
 // -----------------------------
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () => {
-  logger.info(`Server running on port ${PORT}`);
+const HOST = process.env.HOST || "0.0.0.0";
+
+app.listen(PORT, HOST, () => {
+  logger.info(`Server running on http://${HOST}:${PORT}`);
 });
