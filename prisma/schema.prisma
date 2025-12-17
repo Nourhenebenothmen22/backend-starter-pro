@@ -6,22 +6,38 @@ datasource db {
   provider = "postgresql"
 }
 
-// User model
 model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
   password  String
-  movies    Movie[] // relation: a user can have multiple movies
+  role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  movies    Movie[]
+
+  @@map("users")
 }
 
-// Movie model
 model Movie {
-  id     Int    @id @default(autoincrement())
-  title  String
-  year   Int
-  userId Int
-  user   User   @relation(fields: [userId], references: [id])
+  id          Int      @id @default(autoincrement())
+  title       String
+  overview    String   @db.Text
+  releaseDate DateTime
+  posterPath  String?
+  rating      Float?   @default(0.0)
+  genres      String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([title])
+  @@index([userId])
+  @@map("movies")
+}
+
+enum Role {
+  USER
+  ADMIN
 }
