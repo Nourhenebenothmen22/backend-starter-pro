@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import prisma from "../config/db.js";
 import logger from "../config/logger.js";
+import generateToken from "../utils/generateToken.js";
 
 // ==================== REGISTER ====================
 const register = async (req, res) => {
@@ -138,16 +139,8 @@ const login = async (req, res) => {
     }
 
     // Generate JWT
-    const token = jwt.sign(
-      {
-        id: user.id,
-        role: user.role,
-        email: user.email,
-      },
-      process.env.JWT_SECRET || "fallback_secret_change_in_production",
-      { expiresIn: process.env.JWT_EXPIRES_IN || "24h" }
-    );
-
+    const token = generateToken(user.id)
+     
     // Format response user object
     const formattedUser = {
       id: user.id,
@@ -168,8 +161,7 @@ const login = async (req, res) => {
       data: {
         user: formattedUser,
         token,
-        tokenType: "Bearer",
-        expiresIn: process.env.JWT_EXPIRES_IN || "24h",
+        expiresIn: process.env.JWT_EXPIRES_IN ,
       },
       timestamp: new Date().toISOString(),
     });
