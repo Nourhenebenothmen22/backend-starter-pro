@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import logger from "./config/logger.js";
 import movieRoutes from "./routes/movieRoutes.js";
 import { connectDB, disconnectDB } from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
 
 // Connect to database with error handling
 try {
@@ -57,6 +58,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/movies", movieRoutes);
+app.use("/api/v1/auth", authRoutes);
 
 
 // -----------------------------
