@@ -139,7 +139,7 @@ const login = async (req, res) => {
     }
 
     // Generate JWT
-    const token = generateToken(user.id)
+    const token = generateToken(user.id,res)
      
     // Format response user object
     const formattedUser = {
@@ -180,5 +180,35 @@ const login = async (req, res) => {
     });
   }
 };
+// ==================== LOGOUT ====================
+const logout = async (req, res) => {
+  try {
+    res.cookie("jwt", "", {
+      httpOnly: true,
+      expires: new Date(0), 
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
 
-export { register, login };
+    logger.info("User logged out successfully");
+
+    res.status(200).json({
+      success: true,
+      message: "Logout successful",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error("Logout error", {
+      error: error.stack,
+    });
+
+    res.status(500).json({
+      success: false,
+      message: "Logout failed",
+      timestamp: new Date().toISOString(),
+    });
+  }
+};
+
+
+export { register, login,logout};
