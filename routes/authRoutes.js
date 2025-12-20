@@ -1,6 +1,6 @@
 import express from "express";
 import { registerValidation, loginValidation, validateResult } from "../middleware/validate.js";
-import { register, login,logout } from "../controllers/authController.js";
+import { register, login,logout,getUser,getUserById } from "../controllers/authController.js";
 
 const router = express.Router();
 
@@ -9,7 +9,10 @@ router.post("/register", registerValidation, validateResult, register);
 
 // Route de connexion avec validation
 router.post("/login", loginValidation, validateResult, login);
-router.post("/logout", loginValidation, validateResult, logout);
+router.post("/logout", logout);
+router.get("/",getUser)
+router.get("/:id",getUserById)
+
 
 
 export default router;
