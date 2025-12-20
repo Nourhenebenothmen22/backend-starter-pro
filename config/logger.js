@@ -8,23 +8,24 @@ const logFormat = printf(({ level, message, timestamp }) => {
 
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === "production" ? "info" : "debug",
-  format:
-    process.env.NODE_ENV === "production"
-      ? combine(timestamp(), json())
-      : combine(colorize(), timestamp(), logFormat),
+  level: process.env.NODE_ENV === "production" ? "info" : "debug",
 
   transports: [
-    new winston.transports.Console(),
+    new winston.transports.Console({
+      format: combine(colorize(), timestamp(), logFormat),
+    }),
 
     // Logs erreurs
     new winston.transports.File({
       filename: "logs/error.log",
       level: "error",
+      format: combine(timestamp(), json()),
     }),
 
     // Logs globaux
     new winston.transports.File({
       filename: "logs/combined.log",
+      format: combine(timestamp(), json()),
     }),
   ],
 });
