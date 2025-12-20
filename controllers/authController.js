@@ -219,7 +219,20 @@ const getUser = async (req, res) => {
         role: true,
         createdAt: true,
         updatedAt: true,
+         movies: {   
+          select: {
+            id: true,
+            title: true,
+            overview: true,
+            releaseDate: true,
+            posterPath: true,
+            rating: true,
+            genres: true,
+            createdAt: true,
+            updatedAt: true,
+          }
       }
+    }
     });
 
     return res.status(200).json({
@@ -262,6 +275,19 @@ const getUserById = async (req, res) => {
         role: true,
         createdAt: true,
         updatedAt: true,
+         movies: {   // <-- Inclut les films de cet utilisateur
+          select: {
+            id: true,
+            title: true,
+            overview: true,
+            releaseDate: true,
+            posterPath: true,
+            rating: true,
+            genres: true,
+            createdAt: true,
+            updatedAt: true,
+          }
+        }
       }
     });
 
