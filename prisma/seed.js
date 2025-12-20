@@ -45,6 +45,58 @@ const usersMovies = [
       },
     ],
   },
+  {
+    userId: 4,
+    movies: [
+      {
+        title: "Fight Club",
+        overview: "An underground fight club",
+        releaseDate: new Date("1999-10-15"),
+        posterPath: "/fightclub.jpg",
+        rating: 8.8,
+        genres: ["Drama", "Thriller"],
+      }
+    ]
+  },
+  {
+    userId: 5,
+    movies: [
+      {
+        title: "Titanic",
+        overview: "Romance on the Titanic ship",
+        releaseDate: new Date("1997-12-19"),
+        posterPath: "/titanic.jpg",
+        rating: 7.8,
+        genres: ["Romance", "Drama"],
+      }
+    ]
+  },
+  {
+    userId: 6,
+    movies: [
+      {
+        title: "Gladiator",
+        overview: "A Roman general becomes a gladiator",
+        releaseDate: new Date("2000-05-05"),
+        posterPath: "/gladiator.jpg",
+        rating: 8.5,
+        genres: ["Action", "Drama"],
+      }
+    ]
+  },
+  {
+    userId: 7,
+    movies: [
+      {
+        title: "The Lord of the Rings: The Fellowship of the Ring",
+        overview: "A quest to destroy the One Ring",
+        releaseDate: new Date("2001-12-19"),
+        posterPath: "/lotr1.jpg",
+        rating: 8.8,
+        genres: ["Fantasy", "Adventure"],
+      }
+    ]
+  }
 ];
 
 async function main() {
