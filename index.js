@@ -7,7 +7,7 @@ import rateLimit from "express-rate-limit";
 import logger from "./config/logger.js";
 import movieRoutes from "./routes/movieRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
-import watchListRoutes from "./routes/watchlistRoutes.js";
+import watchListRoutes from "./routes/watchListRoutes.js";
 import { connectDB, disconnectDB } from "./config/db.js";
 
 // -----------------------------------
