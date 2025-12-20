@@ -1,4 +1,5 @@
 import "dotenv/config";
+import client from "prom-client";
 import express, { urlencoded } from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -75,6 +76,16 @@ app.get("/", (req, res) => {
       health: "GET /health",
     },
   });
+});
+
+// Initialize prometheus metrics
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics();
+
+// Metrics endpoint
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", client.register.contentType);
+  res.send(await client.register.metrics());
 });
 
 // Health check endpoint

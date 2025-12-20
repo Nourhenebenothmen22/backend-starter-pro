@@ -1,156 +1,111 @@
-# Backend API - Movie Management Service
+# Backend API Service
 
-A robust RESTful API built with **Node.js, Express, and PostgreSQL** (via Prisma ORM), designed to manage movies and user watchlists. This project is containerized using **Docker** for easy deployment.
+A modern Node.js API with a complete monitoring and logging stack.
 
-## 📋 Table of Contents
+## Features
 
-- [Architecture & Tech Stack](#architecture--tech-stack)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Environment Variables](#environment-variables)
-- [Installation & Setup](#installation--setup)
-- [Running the Application](#running-the-application)
-- [API Endpoints](#api-endpoints)
-- [Project Structure](#project-structure)
+- **Node.js & Express**: Fast and scalable web server.
+- **PostgreSQL & Prisma**: Robust database and ORM.
+- **Monitoring**: Prometheus (Metrics) & Grafana (Visualization).
+- **Logging**: Winston (Application Logs) & Loki/Promtail (Log Aggregation).
+- **Security**: Helmet, CORS, Rate Limiting.
 
-## 🏗 Architecture & Tech Stack
+## Architecture
 
-This project follows a **MVC-like architecture** (Models, Views/Routes, Controllers) to separate concerns and ensure maintainability.
+The project follows a microservices-ready architecture using Docker containers.
 
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: PostgreSQL
-- **ORM**: Prisma (using `@prisma/adapter-pg`)
-- **Authentication**: JWT (JSON Web Tokens) with `bcrypt` for password hashing
-- **Containerization**: Docker
-- **Logging**: Winston & Morgan
-- **Security**: Helmet, CORS, Rate Limiting, Express Validator
+```mermaid
+graph TD
+    Client[Client] -->|HTTP Requests| API[Node.js API]
+    API -->|Queries| DB[(PostgreSQL)]
+    API -->|Logs| LogFile[Log Files]
+    API -->|Metrics| Prometheus[Prometheus]
 
-## ✨ Features
+    Promtail[Promtail] -->|Reads| LogFile
+    Promtail -->|Push| Loki[Loki]
 
-- **User Authentication**: Secure Registration and Login.
-- **Movie Management**: CRUD operations for movies (Title, Overview, Ratings, etc.).
-- **Watchlist**: Users can add movies to their personal watchlist and track status (Watching, Completed, Plan to Watch, Dropped).
-- **Security**: Protected routes, input validation, and rate limiting.
-- **Health Checks**: Endpoint to monitor service status.
+    Prometheus -->|Scrape| API
 
-## 🛠 Prerequisites
-
-Ensure you have the following installed if running locally not using Docker:
-
-- [Node.js](https://nodejs.org/) (v18+ recommended)
-- [PostgreSQL](https://www.postgresql.org/)
-- [Docker](https://www.docker.com/) (Optional, for containerized run)
-
-## 🔑 Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-
-```env
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-CORS_ORIGIN=*
-
-# Database Configuration
-# Format: postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public
-DATABASE_URL="postgresql://user:password@localhost:5432/movies_db?schema=public"
-
-# Security
-JWT_SECRET=your_super_secret_jwt_key
+    Grafana[Grafana] -->|Query| Prometheus
+    Grafana -->|Query| Loki
 ```
 
-## 🚀 Installation & Setup
+### Directory Structure
 
-1.  **Clone the repository**:
+```
+├── config/         # Configuration files (Database, Logger)
+├── controllers/    # Request handlers
+├── middleware/     # Express middlewares (Auth, Validation)
+├── prisma/         # Database schema and migrations
+├── routes/         # API Route definitions
+├── utils/          # Utility functions
+├── logs/           # Application logs (Shared volume)
+└── docker-compose.yml # Stack orchestration
+```
 
-    ```bash
-    git clone <repository-url>
-    cd backend-api-dockerized
-    ```
+## Getting Started
 
-2.  **Install dependencies**:
+### Prerequisites
 
-    ```bash
-    npm install
-    ```
+- Docker & Docker Compose
+- Node.js (for local development)
 
-3.  **Database Setup (Prisma)**:
-    Make sure your PostgreSQL database is running.
+### Running with Docker (Recommended)
 
-    ```bash
-    # Generate Prisma Client
-    npx prisma generate
+Start the entire stack (App, DB, Monitoring):
 
-    # Push schema to database
-    npx prisma db push
+```bash
+docker compose up --build -d
+```
 
-    # (Optional) Seed database
-    npm run seed:movies
-    ```
+### Accessing Services
 
-## ▶️ Running the Application
+| Service        | URL                                                            | Credentials       |
+| -------------- | -------------------------------------------------------------- | ----------------- |
+| **API**        | [http://localhost:5000](http://localhost:5000)                 | -                 |
+| **Metrics**    | [http://localhost:5000/metrics](http://localhost:5000/metrics) | -                 |
+| **Grafana**    | [http://localhost:3000](http://localhost:3000)                 | `admin` / `admin` |
+| **Prometheus** | [http://localhost:9090](http://localhost:9090)                 | -                 |
 
-### Development Mode
+## Monitoring & Logging Setup
 
-Runs the server with `nodemon` for hot-reloading.
+### 1. Configure Grafana
+
+1.  Log in to Grafana.
+2.  **Add Prometheus Data Source**:
+    - URL: `http://prometheus:9090`
+3.  **Add Loki Data Source**:
+    - URL: `http://loki:3100`
+
+### 2. Visualize Metrics
+
+- Import Dashboard ID `11159` (Node.js Exporter) or create custom panels.
+- Query metrics like `process_cpu_seconds_total` or `http_request_duration_seconds`.
+
+### 3. Parse Logs
+
+- Go to **Explore** sidebar item.
+- Select **Loki** as source.
+- Query logs with: `{job="backend-logs"}`.
+
+## Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start in dev mode:
 
 ```bash
 npm run dev
 ```
 
-### Production Mode
+## API Endpoints
 
-```bash
-npm start
-```
-
-### Using Docker 🐳
-
-Build and run the container:
-
-```bash
-# Build the image
-docker build -t movie-backend-api .
-
-# Run the container
-docker run -p 5000:5000 --env-file .env movie-backend-api
-```
-
-## 📡 API Endpoints
-
-Base URL: `http://localhost:5000/api/v1`
-
-| Method        | Endpoint          | Description            | Auth Required             |
-| :------------ | :---------------- | :--------------------- | :------------------------ |
-| **Auth**      |                   |                        |                           |
-| `POST`        | `/users/register` | Register a new user    | ❌                        |
-| `POST`        | `/users/login`    | Login user & get token | ❌                        |
-| `POST`        | `/users/logout`   | Logout user            | ❌                        |
-| `GET`         | `/users`          | Get all users          | ❌ (Check implementation) |
-| `GET`         | `/users/:id`      | Get user details       | ❌                        |
-| **Movies**    |                   |                        |                           |
-| `GET`         | `/movies`         | Get all movies         | ❌                        |
-| `POST`        | `/movies`         | Add a new movie        | ❌                        |
-| `PUT`         | `/movies/:id`     | Update a movie         | ❌                        |
-| `DELETE`      | `/movies/:id`     | Delete a movie         | ❌                        |
-| **Watchlist** |                   |                        |                           |
-| `POST`        | `/watchlist`      | Add movie to watchlist | ✅                        |
-| **System**    |                   |                        |                           |
-| `GET`         | `/`               | API Documentation Root | ❌                        |
-| `GET`         | `/health`         | Health Check           | ❌                        |
-
-## 📂 Project Structure
-
-```
-backend-api-dockerized/
-├── config/             # Configuration files (DB, Logger)
-├── controllers/        # Request handlers
-├── middleware/         # Custom middleware (Auth, Validation)
-├── prisma/             # Database schema and seeds
-├── routes/             # API Route definitions
-├── utils/              # specific utility functions
-├── index.js            # Entry point
-├── Dockerfile          # Docker configuration
-└── package.json        # Dependencies and scripts
-```
+- `GET /`: API Health & Info
+- `GET /health`: Health Check
+- `POST /api/v1/auth/register`: Register User
+- `POST /api/v1/auth/login`: Login User
+- `GET /api/v1/movies`: List Movies
