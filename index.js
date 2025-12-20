@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import logger from "./config/logger.js";
 import movieRoutes from "./routes/movieRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import watchListRoutes from "./routes/watchlistRoutes.js";
 import { connectDB, disconnectDB } from "./config/db.js";
 
 // -----------------------------------
@@ -87,6 +88,7 @@ app.get("/health", (req, res) => {
 // API routes
 app.use("/api/v1/users", authRoutes);
 app.use("/api/v1/movies", movieRoutes);
+app.use("/api/v1/watchList",watchListRoutes)
 
 // -----------------------------------
 // 404 HANDLER (MUST BE LAST)
