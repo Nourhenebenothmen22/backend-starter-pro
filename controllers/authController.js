@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import prisma from "../config/db.js";
 import logger from "../config/logger.js";
 import generateToken from "../utils/generateToken.js";
@@ -210,5 +209,92 @@ const logout = async (req, res) => {
   }
 };
 
+const getUser = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      }
+    });
 
-export { register, login,logout};
+    return res.status(200).json({
+      success: true,
+      message: "Users fetched successfully",
+      data: users
+    });
+  } catch (error) {
+    logger.error("Error fetching users: %o", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      data: null
+    });
+  }
+};
+
+
+
+const getUserById = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (isNaN(id)) {
+      logger.warn(`Invalid user ID: ${req.params.id}`);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+        data: null
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      }
+    });
+
+    if (!user) {
+      logger.warn(`User with ID ${id} not found`);
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+        data: null
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User fetched successfully",
+      data: user
+    });
+
+  } catch (error) {
+    logger.error("Error fetching user by ID: %o", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      data: null
+    });
+  }
+};
+
+
+
+
+
+
+
+
+export { register, login,logout,getUser,getUserById };
