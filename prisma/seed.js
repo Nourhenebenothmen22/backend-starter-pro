@@ -55,8 +55,8 @@ const usersMovies = [
         posterPath: "/fightclub.jpg",
         rating: 8.8,
         genres: ["Drama", "Thriller"],
-      }
-    ]
+      },
+    ],
   },
   {
     userId: 5,
@@ -68,8 +68,8 @@ const usersMovies = [
         posterPath: "/titanic.jpg",
         rating: 7.8,
         genres: ["Romance", "Drama"],
-      }
-    ]
+      },
+    ],
   },
   {
     userId: 6,
@@ -81,8 +81,8 @@ const usersMovies = [
         posterPath: "/gladiator.jpg",
         rating: 8.5,
         genres: ["Action", "Drama"],
-      }
-    ]
+      },
+    ],
   },
   {
     userId: 7,
@@ -94,9 +94,9 @@ const usersMovies = [
         posterPath: "/lotr1.jpg",
         rating: 8.8,
         genres: ["Fantasy", "Adventure"],
-      }
-    ]
-  }
+      },
+    ],
+  },
 ];
 
 async function main() {
@@ -105,10 +105,7 @@ async function main() {
   for (const entry of usersMovies) {
     const { userId, movies } = entry;
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       logger.warn(`⚠️ User with ID ${userId} not found, skipping...`);
       continue;
@@ -121,9 +118,10 @@ async function main() {
         ...movie,
         userId,
       })),
+      skipDuplicates: true, // ✅ ignore duplicates based on unique constraints
     });
 
-    logger.info(`🎬 Movies created for user ID ${userId}`);
+    logger.info(`🎬 Movies processed for user ID ${userId}`);
   }
 }
 
