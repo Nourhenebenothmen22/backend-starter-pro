@@ -1,0 +1,34 @@
+name: Node.js CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  
+jobs:
+  build:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      # 1️⃣ Checkout code
+      - uses: actions/checkout@v4
+
+      # 2️⃣ Setup Node.js
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # 3️⃣ Install dependencies
+      - run: npm ci
+
+      # 4️⃣ Créer le fichier .env et injecter le secret
+      - name: Create .env file
+        run: |
+          touch .env
+          echo "${{ secrets.BACKEND_ENV_FILE }}" > .env
+          cat .env  # juste pour vérifier le contenu dans le log (optionnel)
